@@ -103,6 +103,20 @@ def row_echelon_form(A, B):
 
     Returns:
     numpy.array: A new augmented matrix in row echelon form with pivots as 1.
+    
+    EQ-1: ROW ECHELON FORM (REF)
+    ---------------------------
+    Forward elimination creates an upper triangular matrix with leading 1s (pivots).
+    Example output from row_echelon_form():
+    [[1, 0.5, -0.5, 4],
+     [0, 1, -1.2, 3.5],
+     [0, 0, 1, 2]]
+    
+    Properties of REF:
+    - All non-zero rows are above zero rows
+    - Leading entry (pivot) in each row is to the right of the leading entry in the row above
+    - Leading entry in each row is 1
+    - All entries below each pivot are 0
     """
     
     # Before any computation, check if matrix A (coefficient matrix) has non-zero determinant. 
@@ -178,7 +192,11 @@ def row_echelon_form(A, B):
 
 
 if __name__ == "__main__":
-    # Example usage
+    # Example usage with system of linear equations:
+    # 2x + y - z = 8
+    # -3x - y + 2z = -11
+    # -2x + y + 2z = -3
+    
     A = np.array([
         [2, 1, -1],
         [-3, -1, 2],
@@ -187,6 +205,72 @@ if __name__ == "__main__":
     
     B = np.array([[8], [-11], [-3]], dtype=float)
     
-    result = row_echelon_form(A, B)
-    print("Row Echelon Form:")
-    print(result)
+    # ===========================
+    # GAUSSIAN ELIMINATION STEPS
+    # ===========================
+    
+    print("="*70)
+    print("EQ-3: GAUSSIAN ELIMINATION (Forward and Backward Elimination)")
+    print("="*70)
+    print()
+    
+    print("ORIGINAL SYSTEM:")
+    print("Augmented Matrix [A|B]:")
+    augmented = np.hstack([A, B])
+    print(augmented)
+    print()
+    
+    # Step 1: Forward Elimination (Row Echelon Form)
+    print("-"*70)
+    print("EQ-1: FORWARD ELIMINATION → ROW ECHELON FORM (REF)")
+    print("-"*70)
+    
+    M_echelon = row_echelon_form(A, B)
+    print("After forward elimination (row_echelon_form):")
+    print(M_echelon)
+    print()
+    print("Properties of REF:")
+    print("✓ Upper triangular matrix with pivots = 1")
+    print("✓ All entries below pivots are 0")
+    print("✓ Ready for back substitution")
+    print()
+    
+    # Step 2: Back Substitution (Reduced Row Echelon Form)
+    print("-"*70)
+    print("EQ-2: BACK SUBSTITUTION → REDUCED ROW ECHELON FORM (RREF)")
+    print("-"*70)
+    
+    from back_substitution import back_substitution
+    
+    M_rref = M_echelon.copy()
+    num_rows = M_rref.shape[0]
+    
+    # Perform back substitution to get RREF
+    for row in reversed(range(num_rows)):
+        index = get_index_first_non_zero_value_from_row(M_rref, row)
+        for j in range(row):
+            value = M_rref[j, index]
+            M_rref[j] = M_rref[j] - value * M_rref[row]
+    
+    print("After back substitution (RREF):")
+    print(M_rref)
+    print()
+    print("Properties of RREF:")
+    print("✓ Identity matrix in coefficient part (diagonal = 1, rest = 0)")
+    print("✓ Solution directly readable from last column")
+    print("✓ All entries above and below pivots are 0")
+    print()
+    
+    # Extract and display solution
+    print("="*70)
+    print("SOLUTION")
+    print("="*70)
+    solution = M_rref[:, -1]
+    print(f"x = {solution[0]:.6f}")
+    print(f"y = {solution[1]:.6f}")
+    print(f"z = {solution[2]:.6f}")
+    print()
+    
+    # Verify
+    print("Verification (A × solution = B):")
+    print(A @ solution.reshape(-1, 1))
